@@ -85,6 +85,7 @@ class Parser:
 
     def parse(self):
         while self.curr_token is not None:
+            self.expr()
             self.term()
             self.advance()
         return self.tokens
@@ -102,7 +103,19 @@ class Parser:
             result = left_num - right_num
             self.tokens = self.tokens[:self.index - 1] + [result] + self.tokens[self.index + 2:]
             self.index -= 1
-
+    def expr(self):
+        if self.curr_token == MUL:
+            left_num = self.tokens[self.index - 1]
+            right_num = self.tokens[self.index + 1]
+            result = left_num * right_num
+            self.tokens = self.tokens[:self.index - 1] + [result] + self.tokens[self.index + 2:]
+            self.index -= 1
+        if self.curr_token == DIV:
+            left_num = self.tokens[self.index - 1]
+            right_num = self.tokens[self.index + 1]
+            result = left_num / right_num
+            self.tokens = self.tokens[:self.index - 1] + [result] + self.tokens[self.index + 2:]
+            self.index -= 1
 lexer = Lexer(x)
 tokens = lexer.tokenize()
 parser = Parser(tokens)

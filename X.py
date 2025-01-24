@@ -1,14 +1,13 @@
-x = input("Xinter ==> ")  
-PLUS = "Plus" 
-MINUS = "Minus"
-DIV = "Division"
-MUL = "Multiplication"
+x = input("Xinter ==> ")
+PLUS = "PLUS"
+MINUS = "MINUS"
+DIV = "DIVISION"
+MUL = "MULTIPLICATION"
 nums = "1234567890"
-INT = 'INT' 
-FLOAT = 'FLOAT'
-OPAREN="LPAREN"
-CPAREN="RPAREN"
-PRINT="PRINT"
+OPAREN = "LPAREN"
+CPAREN = "RPAREN"
+letters = "azertyuiopqsdfghjklmwxcvbn"
+
 class Lexer:
     def __init__(self, text):
         self.text = text
@@ -43,6 +42,8 @@ class Lexer:
             elif self.curr_char == ")":
                 self.tokens.append(CPAREN)
                 self.advance()
+            elif self.curr_char in letters:
+                self.tokens.append(self._parse_stmt())
             elif self.curr_char in nums or self.curr_char == ".":
                 self.tokens.append(self._parse_number())
             else:
@@ -61,10 +62,49 @@ class Lexer:
             self.advance()
 
         if dots == 0:
-            return f'{INT}: {int(num_str)}'
+            return int(num_str)
         else:
-            return f'{FLOAT}: {float(num_str)}'
+            return float(num_str)
+
+    def _parse_stmt(self):
+        stmt_str = ""
+        while self.curr_char is not None and self.curr_char in letters:
+            stmt_str += self.curr_char
+            self.advance()
+        return stmt_str 
+class Parser:
+    def __init__(self, tokens):
+        self.tokens = tokens
+        self.index = -1
+        self.curr_token = None
+        self.advance()
+
+    def advance(self):
+        self.index += 1
+        self.curr_token = self.tokens[self.index] if self.index < len(self.tokens) else None
+
+    def parse(self):
+        while self.curr_token is not None:
+            self.term()
+            self.advance()
+        return self.tokens
+
+    def term(self):
+        if self.curr_token == PLUS:
+            left_num = self.tokens[self.index - 1]
+            right_num = self.tokens[self.index + 1]
+            result = left_num + right_num
+            self.tokens = self.tokens[:self.index - 1] + [result] + self.tokens[self.index + 2:]
+            self.index -= 1
+        elif self.curr_token == MINUS:
+            left_num = self.tokens[self.index - 1]
+            right_num = self.tokens[self.index + 1]
+            result = left_num - right_num
+            self.tokens = self.tokens[:self.index - 1] + [result] + self.tokens[self.index + 2:]
+            self.index -= 1
+
 lexer = Lexer(x)
 tokens = lexer.tokenize()
-print(tokens)
-
+parser = Parser(tokens)
+result = parser.parse()
+print(result)

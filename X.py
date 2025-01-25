@@ -7,7 +7,8 @@ nums = "1234567890"
 OPAREN = "LPAREN"
 CPAREN = "RPAREN"
 letters = "azertyuiopqsdfghjklmwxcvbn"
-
+illegalchars="ã░☻╚æ"
+string=False
 class Lexer:
     def __init__(self, text):
         self.text = text
@@ -22,7 +23,9 @@ class Lexer:
 
     def tokenize(self):
         while self.curr_char is not None:
-            if self.curr_char.isspace():
+            if self.curr_char in illegalchars:
+                raise ValueError(f'Unexpected Character: {self.curr_char}')
+            elif self.curr_char.isspace():
                 self.advance()
             elif self.curr_char == "+":
                 self.tokens.append(PLUS)
@@ -42,7 +45,10 @@ class Lexer:
             elif self.curr_char == ")":
                 self.tokens.append(CPAREN)
                 self.advance()
-            elif self.curr_char in letters:
+            elif self.curr_char=="=":
+                self.tokens.append("EQUALS")
+                self.advance()
+            elif self.curr_char in letters and string==False:
                 self.tokens.append(self._parse_stmt())
             elif self.curr_char in nums or self.curr_char == ".":
                 self.tokens.append(self._parse_number())
@@ -82,14 +88,17 @@ class Parser:
     def advance(self):
         self.index += 1
         self.curr_token = self.tokens[self.index] if self.index < len(self.tokens) else None
-
     def parse(self):
         while self.curr_token is not None:
             self.expr()
             self.term()
+            self.Print()
             self.advance()
         return self.tokens
-
+    def Print(self):
+        if self.curr_token == "log":
+            content= self.tokens[self.index+1]
+            print(content)
     def term(self):
         if self.curr_token == PLUS:
             left_num = self.tokens[self.index - 1]
